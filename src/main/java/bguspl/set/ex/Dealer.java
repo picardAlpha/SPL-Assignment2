@@ -51,6 +51,17 @@ public class Dealer implements Runnable {
     @Override
     public void run() {
         System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
+
+        //Added
+        System.out.println("I'm the dealer. The cards in my deck are :");
+        for(int card: deck) {
+            System.out.print(card);
+            if(card != 80)
+                System.out.printf(", ");
+        }
+
+
+
         while (!shouldFinish()) {
             Collections.shuffle(deck);
             placeCardsOnTable();
@@ -101,6 +112,14 @@ public class Dealer implements Runnable {
      */
     private void placeCardsOnTable() {
         // TODO implement
+
+        //Added
+        System.out.println("Dealer : Trying to place cards on table. ");
+        for(int i=0; i< 12 ; i++){
+            table.placeCard(deck.indexOf(i), i);
+
+        }
+
     }
 
     /**
