@@ -36,7 +36,7 @@ public class Main {
 
         // start the dealer thread
         Thread dealerThread = new Thread(dealer, "dealer");
-        dealerThread.setPriority(10);
+        dealerThread.setPriority(Thread.MAX_PRIORITY);
         dealerThread.start();
 
         try { dealerThread.join(); } catch (InterruptedException ignored) {}
