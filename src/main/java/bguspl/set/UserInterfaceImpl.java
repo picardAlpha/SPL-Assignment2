@@ -280,6 +280,7 @@ public class UserInterfaceImpl extends JFrame implements UserInterface {
 
     @Override
     public void setCountdown(int seconds, boolean warn) {
+        System.out.println("USER INTERFACE: Setting countdown timer to " + seconds);
         timerPanel.setCountdown(seconds, warn);
     }
 

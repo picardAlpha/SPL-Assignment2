@@ -92,6 +92,7 @@ public class Player implements Runnable {
             System.out.printf("Info: Thread %s starting.%n", Thread.currentThread().getName());
             while (!terminate) {
                 // TODO implement player key press simulator
+
                 try {
                     synchronized (this) { wait(); }
                 } catch (InterruptedException ignored) {}

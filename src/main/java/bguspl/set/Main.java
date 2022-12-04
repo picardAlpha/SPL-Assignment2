@@ -28,6 +28,7 @@ public class Main {
         Player[] players = new Player[env.config.players];
         Table table = new Table(env);
         Dealer dealer = new Dealer(env, table, players);
+
         for (int i = 0; i < players.length; i++)
             players[i] = new Player(env, dealer, table, i, i < env.config.humanPlayers);
         ui.addKeyListener(new InputManager(env, players));
@@ -35,6 +36,7 @@ public class Main {
 
         // start the dealer thread
         Thread dealerThread = new Thread(dealer, "dealer");
+        dealerThread.setPriority(10);
         dealerThread.start();
 
         try { dealerThread.join(); } catch (InterruptedException ignored) {}

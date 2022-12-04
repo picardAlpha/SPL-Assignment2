@@ -17,7 +17,8 @@ public class Table {
     /**
      * The game environment object.
      */
-    private final Env env;
+    //CHANGE TO PRIVATE
+    public final Env env;
 
     /**
      * Mapping between a slot and the card placed in it (null if none).
@@ -99,9 +100,6 @@ public class Table {
         // TODO implement
 
         env.ui.placeCard(card, slot);
-
-
-
     }
 
     /**

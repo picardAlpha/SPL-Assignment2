@@ -2,6 +2,9 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import javax.swing.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,6 +19,7 @@ public class Dealer implements Runnable {
      * The game environment object.
      */
     private final Env env;
+
 
     /**
      * Game entities.
@@ -38,11 +42,20 @@ public class Dealer implements Runnable {
      */
     private long countdownUntil;
 
+    //Added
+    LocalDateTime timeInitiated = LocalDateTime.now(); // May be deleted if imported timer works.
+    Timer timer;
+
+
+
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
         this.table = table;
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
+
+        // Added
+
     }
 
     /**
@@ -59,14 +72,18 @@ public class Dealer implements Runnable {
             if(card != 80)
                 System.out.printf(", ");
         }
-
-
+        System.out.println();
+        System.out.println("CountDownUntil = " +countdownUntil);
 
         while (!shouldFinish()) {
             Collections.shuffle(deck);
             placeCardsOnTable();
             countdownLoop();
             removeAllCardsFromTable();
+
+            //Added
+            System.out.println("CountDownUntil = " +countdownUntil);
+
         }
         announceWinners();
         System.out.printf("Info: Thread %s terminated.%n", Thread.currentThread().getName());
@@ -117,9 +134,7 @@ public class Dealer implements Runnable {
         System.out.println("Dealer : Trying to place cards on table. ");
         for(int i=0; i< 12 ; i++){
             table.placeCard(deck.indexOf(i), i);
-
         }
-
     }
 
     /**
@@ -134,6 +149,17 @@ public class Dealer implements Runnable {
      */
     private void updateCountdown() {
         // TODO implement
+
+
+        // Calculating time elapsed
+        Duration timeElapsed = Duration.between(timeInitiated, LocalDateTime.now());
+        Duration timeRemaining =  timeElapsed;
+        System.out.println("Time Elapsed : " + (int) timeElapsed.toSeconds());
+        System.out.println("Dealer : Trying to set count down timer to " + (int) (60 - timeElapsed.toSeconds()));
+        // Updating the UI
+        table.env.ui.setCountdown((int) (60 - timeElapsed.toSeconds()) * 1000, false);
+
+
     }
 
     /**
