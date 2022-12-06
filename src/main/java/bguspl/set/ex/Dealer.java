@@ -7,6 +7,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -43,16 +45,22 @@ public class Dealer implements Runnable {
     private long countdownUntil;
 
     //Added
-    LocalDateTime timeInitiated = LocalDateTime.now(); // May be deleted if imported timer works.
-    Timer timer;
+
+    AtomicInteger timer = new AtomicInteger(60);
+    long lastTime = System.currentTimeMillis();
+    AtomicBoolean tableIsFull = new AtomicBoolean(false);
 
 
 
+
+    //TODO CHANGING CONSTRUCTOR NOT ALLOWED (If it changes the main initialization)
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
         this.table = table;
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
+        tableIsFull.getAndSet(false);
+
 
         // Added
 
@@ -77,9 +85,10 @@ public class Dealer implements Runnable {
 
         while (!shouldFinish()) {
             Collections.shuffle(deck);
-            placeCardsOnTable();
+            if(timer.get()==60)
+                placeCardsOnTable();
             countdownLoop();
-            removeAllCardsFromTable();
+//            removeAllCardsFromTable();
 
             //Added
             System.out.println("CountDownUntil = " +countdownUntil);
@@ -96,8 +105,15 @@ public class Dealer implements Runnable {
         resetCountdown();
         while (!terminate && System.currentTimeMillis() < countdownUntil) {
             updateCountdown();
-            sleepUntilWokenOrTimeout();
+            try {
+                sleepUntilWokenOrTimeout();
+            }
+            catch (InterruptedException e ) {
+            }
+
+            // Invoke only if needed. Sends dealer thread to sleep.
             removeCardsFromTable();
+            // Invoke only if needed. Sends dealer thread to sleep
             placeCardsOnTable();
         }
     }
@@ -131,17 +147,28 @@ public class Dealer implements Runnable {
         // TODO implement
 
         //Added
-        System.out.println("Dealer : Trying to place cards on table. ");
-        for(int i=0; i< 12 ; i++){
-            table.placeCard(deck.indexOf(i), i);
+        //TODO : Only place cards if needed! This will fix the timer.
+        //TODO : Scenario 1 : timer ran out.
+        //TODO : Scenario 2 : Player Chose 3 cards, and
+
+        if(!tableIsFull.get()) {
+            System.out.println("Dealer : Trying to place cards on table. ");
+            for (int i = 0; i < 12 && i<deck.size(); i++) {  // Place cards until table is full or deck is empty
+                table.placeCard(deck.indexOf(i), i);
+            }
+            tableIsFull.getAndSet(true);
         }
     }
 
     /**
      * Sleep for a fixed amount of time or until the thread is awakened for some purpose.
      */
-    private void sleepUntilWokenOrTimeout() {
-        // TODO implement
+    private void sleepUntilWokenOrTimeout() throws InterruptedException {
+        // TODO: is that the intent?
+        synchronized (this){
+            wait(200);
+        }
+
     }
 
     /**
@@ -149,17 +176,14 @@ public class Dealer implements Runnable {
      */
     private void updateCountdown() {
         // TODO implement
-
-
-        // Calculating time elapsed
-        Duration timeElapsed = Duration.between(timeInitiated, LocalDateTime.now());
-        Duration timeRemaining =  timeElapsed;
-        System.out.println("Time Elapsed : " + (int) timeElapsed.toSeconds());
-        System.out.println("Dealer : Trying to set count down timer to " + (int) (60 - timeElapsed.toSeconds()));
-        // Updating the UI
-        table.env.ui.setCountdown((int) (60 - timeElapsed.toSeconds()) * 1000, false);
-
-
+//        System.out.println(System.currentTimeMillis()-lastTime);
+        if(System.currentTimeMillis() - lastTime > 999) {
+            timer.decrementAndGet();
+            boolean warn = timer.get() <= 10;
+            table.env.ui.setCountdown(timer.get()*1000, warn);
+            lastTime = System.currentTimeMillis();
+            if(timer.get() == 0 ){ timer.set(60); tableIsFull.set(false);}
+        }
     }
 
     /**
@@ -184,5 +208,9 @@ public class Dealer implements Runnable {
      */
     private void announceWinners() {
         // TODO implement
+    }
+
+    public void placeToken(int player, int slot){
+        table.placeToken(player,slot);
     }
 }

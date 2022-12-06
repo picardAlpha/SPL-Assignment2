@@ -30,6 +30,9 @@ class InputManager extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
         // dispatch the key event to the player according to the key map
+        // Added
+        System.out.println("A key was pressed.");
+        //
         int keyCode = e.getKeyCode();
         int player = keyMap[keyCode] - 1;
         if (player >= 0)

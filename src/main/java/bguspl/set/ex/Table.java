@@ -111,7 +111,7 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
 
-        // TODO implement
+//        // TODO implement
     }
 
     /**
@@ -121,6 +121,9 @@ public class Table {
      */
     public void placeToken(int player, int slot) {
         // TODO implement
+
+        env.ui.placeToken(player,slot);
+
     }
 
     /**
